@@ -23,7 +23,7 @@ class AwesomeProject extends Component {
           To get started, rytertyrt
         </Text>
         <Text style={styles.instructions2}>
-            tyryry
+            tyryry sdsd
         </Text>
         <Text style ={styles.instructions3}>hello {'<3'}
         </Text>
