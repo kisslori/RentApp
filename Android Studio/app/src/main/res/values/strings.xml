@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="title">Title:</string>
+    <string name="title_hint">title</string>
+    <string name="address_text">Address:</string>
+    <string name="address_hint">address</string>
+    <string name="nr_of_rooms_text">Nr of Rooms</string>
+    <string name="nr_of_rooms_hint">room nr</string>
+    <string name="add_button">Add</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="save_edited_apartment">Save</string>
+</resources>
