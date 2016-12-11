@@ -11,18 +11,14 @@ import {
     StatusBar,
     TouchableHighLight,
     TouchableNativeFeedback,
-    TouchableOpacity
+    TouchableOpacity,
+    AsyncStorage
 } from 'react-native';
 
 import Communications from 'react-native-communications';
 import Button from 'react-native-button';
 
-var apartments = [
-    {"title": "App1", "address": "Main street", "rooms": "21"},
-    {"title": "Ap2", "address": "cluj", "rooms": "31"},
-    {"title": "House", "address": " dej", "rooms": "5"},
-
-];
+var apartments = [];
 
 
 class Apartment extends Component {
@@ -77,6 +73,10 @@ class AwesomeProject extends Component {
     constructor(props) {
         super(props);
 
+        if (apartments.length == 0) {
+            this._getPersistedData();
+        }
+
         this.state = {
             title: '',
             address: '',
@@ -96,13 +96,51 @@ class AwesomeProject extends Component {
         });
     }
 
+    _persistData() {
+        return AsyncStorage.setItem('key1', JSON.stringify(apartments))
+            .then(json => console.log('success! at persist save'))
+            .catch(error => console.log('error! at persist save'));
+    }
+
+    _getPersistedData() {
+        return AsyncStorage.getItem('key1')
+            .then(req => JSON.parse(req))
+            .then(json => {
+
+                console.log(json)
+
+
+                for (var i = 0; i < json.length; i++) {
+                    apartments.push({
+                        "title": json[i].title,
+                        "address": json[i].address,
+                        "rooms": json[i].rooms
+
+                    });
+
+
+                    this.setState({
+                        dataSource: this.state.dataSource.cloneWithRows(apartments),
+                        loaded: true,
+                    });
+                }
+            })
+            .catch(error => console.log('error! la cititre !!!!!'));
+
+    }
+
     _addBtn() {
-        apartments.push({"title": this.state.title, "address": this.state.address, "rooms": this.state.rooms});
-        Alert.alert("Done", "Apartment added!");
-        this.setState({
-            dataSource: this.state.dataSource.cloneWithRows(apartments),
-            loaded: true,
-        });
+        if (this.state.title !== '' && this.state.address != '' && this.state.rooms != '') {
+            apartments.push({"title": this.state.title, "address": this.state.address, "rooms": this.state.rooms});
+            Alert.alert("Done", "Apartment added!");
+            this.setState({
+                dataSource: this.state.dataSource.cloneWithRows(apartments),
+                loaded: true,
+            });
+            this._persistData();
+        } else {
+            Alert.alert("Warning", "Some input is empty");
+        }
     }
 
 
@@ -220,16 +258,49 @@ class EditDetails extends React.Component {
 
     }
 
+    _persistData() {
+        return AsyncStorage.setItem('key1', JSON.stringify(apartments))
+            .then(json => console.log('success! at persist save'))
+            .catch(error => console.log('error! at persist save'));
+    }
 
     /**
      * when pressing the Save button
      */
     _handlePress() {
+        if (this.state.title !== '' && this.state.address != '' && this.state.rooms != '') {
+            this.props.apartment.title = this.state.title;
+            this.props.apartment.address = this.state.address;
+            this.props.apartment.rooms = this.state.rooms;
+            Alert.alert("Saved");
 
-        this.props.apartment.title = this.state.title;
-        this.props.apartment.address = this.state.address;
-        this.props.apartment.rooms = this.state.rooms;
-        this.props.navigator.pop();
+            this._persistData();
+            this.props.navigator.pop();
+
+
+        } else {
+            Alert.alert("Warning", "One or more fields are empty");
+        }
+
+
+    }
+
+    _handlePressDelete() {
+        var index = apartments.indexOf(this.props.apartment);
+
+        if (index > -1) {
+            apartments.splice(index, 1);
+            Alert.alert("Done", "Deleted");
+
+            this._persistData();
+
+            this.props.navigator.push({
+                name: 'AwesomeProject',
+            })
+        }
+        else {
+            Alert.alert("Warning", "Ap not found");
+        }
     }
 
     render() {
@@ -271,6 +342,21 @@ class EditDetails extends React.Component {
                     onPress={ () => this._handlePress() }>
                     Save and return
                 </Button>
+
+                <Button
+                    containerStyle={{
+                        padding: 10,
+                        height: 45,
+                        overflow: 'hidden',
+                        borderRadius: 4,
+                        backgroundColor: 'red',
+                        marginBottom: 4
+                    }}
+                    style={{fontSize: 20, color: 'white'}}
+                    styleDisabled={{color: 'red'}}
+                    onPress={ () => this._handlePressDelete() }>
+                    Delete
+                </Button>
             </View>
         )
     }
@@ -278,76 +364,88 @@ class EditDetails extends React.Component {
 }
 
 
-var App = React.createClass({
+var
+    App = React.createClass({
 
-    renderScene(route, navigator) {
-        if (route.name == 'AwesomeProject') {
-            return <AwesomeProject navigator={navigator} {...route.passProps}  />
+        renderScene(route, navigator) {
+            if (route.name == 'AwesomeProject') {
+                return <AwesomeProject navigator={navigator} {...route.passProps}  />
+            }
+            if (route.name == 'EditDetails') {
+                return <EditDetails navigator={navigator} {...route.passProps}  />
+            }
+        },
+
+        render() {
+            return (
+                <Navigator
+                    style={{flex: 1}}
+                    initialRoute={{name: 'AwesomeProject'}}
+                    renderScene={ this.renderScene }/>
+            )
         }
-        if (route.name == 'EditDetails') {
-            return <EditDetails navigator={navigator} {...route.passProps}  />
+    });
+
+
+var
+    SCREEN_WIDTH = require('Dimensions').get('window').width;
+var
+    BaseConfig = Navigator.SceneConfigs.FloatFromRight;
+var
+    CustomLeftToRightGesture = Object.assign({}, BaseConfig.gestures.pop, {
+        snapVelocity: 8,
+        edgeHitWidth: SCREEN_WIDTH,
+    });
+var
+    CustomSceneConfig = Object.assign({}, BaseConfig, {
+        springTension: 100,
+        springFriction: 1,
+        gestures: {
+            pop: CustomLeftToRightGesture,
         }
-    },
+    });
 
-    render() {
-        return (
-            <Navigator
-                style={{flex: 1}}
-                initialRoute={{name: 'AwesomeProject'}}
-                renderScene={ this.renderScene }/>
-        )
-    }
-});
+const
+    styles = StyleSheet.create({
 
+        input: {
+            backgroundColor: 'white',
+            height: 40,
+            borderColor: 'white',
+            borderWidth: 1,
+            margin: 3,
+        },
+        listView: {
+            width: 320,
+            paddingTop: 1,
+            backgroundColor: '#F5FCFF',
+        },
+        header: {
+            fontWeight: 'bold',
+            fontSize: 30,
+            textAlign: 'center',
+            color: 'black'
 
-var SCREEN_WIDTH = require('Dimensions').get('window').width;
-var BaseConfig = Navigator.SceneConfigs.FloatFromRight;
-var CustomLeftToRightGesture = Object.assign({}, BaseConfig.gestures.pop, {
-    snapVelocity: 8,
-    edgeHitWidth: SCREEN_WIDTH,
-});
-var CustomSceneConfig = Object.assign({}, BaseConfig, {
-    springTension: 100,
-    springFriction: 1,
-    gestures: {
-        pop: CustomLeftToRightGesture,
-    }
-});
+        },
+        holder: {
+            flex: 0.25,
+            justifyContent: 'center',
+        },
+        text: {
+            fontSize: 50,
+            backgroundColor: 'red'
+        },
+        viewDetails: {
+            margin: 9
+        }
 
-const styles = StyleSheet.create({
-
-    input: {
-        backgroundColor: 'white',
-        height: 40,
-        borderColor: 'white',
-        borderWidth: 1,
-        margin: 3,
-    },
-    listView: {
-        width: 320,
-        paddingTop: 1,
-        backgroundColor: '#F5FCFF',
-    },
-    header: {
-        fontWeight: 'bold',
-        fontSize: 30,
-        textAlign: 'center',
-        color: 'black'
-
-    },
-    holder: {
-        flex: 0.25,
-        justifyContent: 'center',
-    },
-    text: {
-        fontSize: 50,
-        backgroundColor: 'red'
-    },
-    viewDetails: {
-        margin: 9
-    }
-
-});
+    });
 
 
-AppRegistry.registerComponent('AwesomeProject', () => App);
+AppRegistry
+    .registerComponent(
+        'AwesomeProject'
+        , () =>
+            App
+    )
+;
