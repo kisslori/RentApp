@@ -9,7 +9,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import static com.example.lorand.myapplication.MainActivity.arrayList;
+import static com.example.lorand.myapplication.UserActivity.arrayList;
 
 public class EditActivity extends AppCompatActivity {
     public int position;
@@ -43,7 +43,7 @@ public class EditActivity extends AppCompatActivity {
         String at = String.valueOf(addressText.getText());
         String nt = String.valueOf(nrText.getText());
 
-        MainActivity.Ap app = new MainActivity.Ap(tt, at, nt);
+        Apartment app = new Apartment(tt, at, nt);
 
         arrayList.set(position, app);
         finish();

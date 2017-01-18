@@ -16,7 +16,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Main2Activity"
+            android:name=".AddActivity"
             android:label="@string/title_activity_main2"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
@@ -29,6 +29,9 @@
             android:theme="@style/AppTheme.NoActionBar">
 
         </activity>
+        <activity android:name=".UserActivity"/>
+        <activity android:name=".RegistrationActivity"/>
+        <activity android:name=".LoginActivity"/>
     </application>
 
 </manifest>
